@@ -62,11 +62,15 @@ SearchTree.prototype = {
         this.rootNode.remove(edges);
     },
 
+    destroyTree: function() {
+        this.rootNode = null;
+        this.numNodes = 0;
+    },
+
     search: function(edges, returnPrefix) {
         var curNode = this.rootNode;
         for (var i = 0; i < edges.length; i++) {
             var e = edges[i];
-            console.log("move: " + e);
             if (e in curNode.children) {
                 // traverse to child
                 curNode = curNode.children[e];
@@ -88,6 +92,12 @@ SearchTree.prototype = {
 
     stringify: function() {
         return JSON.stringify(this);
+    },
+
+    populateFromJSON: function(string) {
+        var json = JSON.parse(string);
+        this.rootNode = json.rootNode;
+        this.numNodes = json.numNodes;
     }
 };
 
