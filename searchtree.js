@@ -69,7 +69,7 @@ SearchTree.prototype = {
 
     search: function(edges, returnPrefix) {
         var curNode = this.rootNode;
-        for (var i = 0; i < edges.length; i++) {
+            for (var i = 0; i < edges.length; i++) {
             var e = edges[i];
             if (e in curNode.children) {
                 // traverse to child
@@ -88,6 +88,55 @@ SearchTree.prototype = {
         // the edge list has been traversed,
         // return the payload
         return {result: curNode.payload, prefix: false};
+    },
+
+    /*
+     * Perform depth-first search to retrieve a node with the given
+     * payload. Also returns the edge weights along the path from the 
+     * root node to the target node.
+     */
+    dfs: function(payload) {
+        function dfsRecurse(payload, curNode, pi) {
+            if (curNode.payload.typeid == payload) {
+                return curNode;
+            }
+            else {
+                var res = null;
+                for (var e in curNode.children) {
+                    if (res) {
+                        break;
+                    }
+
+                    pi[curNode.children[e].payload.typeid] = {e: e, parent: curNode.payload.typeid};
+                    res = dfsRecurse(payload, curNode.children[e], pi);
+                }
+
+                return res;
+            }
+        }
+
+        /*
+         * from the list of predecessors, return the edge weights
+         * along the path from the root node to the target node
+         */
+        function backtrackEdges(pi, payload) {
+            var edges = new Array();
+            var p = payload;
+            while (p in pi) {
+                edges.push(pi[p].e);
+                p = pi[p].parent;
+            }
+
+            return edges.reverse();
+        }
+
+        var pi = new Object();
+        var searchRes = {
+            node: dfsRecurse(payload, this.rootNode, pi),
+            edges: backtrackEdges(pi, payload)
+        };
+
+        return searchRes;
     },
 
     stringify: function() {
@@ -150,5 +199,14 @@ SearchTreeNode.prototype = {
         else if (e in this.children) {
             this.children[e].remove(edges);
         }
+    },
+
+    getChildren: function() {
+        var childList = new Array();
+        for (var e in this.children) {
+            childList.push(this.children[e]);
+        }
+
+        return childList;
     }
 };
